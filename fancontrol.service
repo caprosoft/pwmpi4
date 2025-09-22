@@ -1,0 +1,16 @@
+[Unit]
+Description=Custom PWM Fan Control (C) for Raspberry Pi - Early Boot
+After=pigpiod.service
+Requires=pigpiod.service
+Before=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/opt/fancontrol/fan_control
+Restart=always
+RestartSec=2
+User=pi
+Group=pi
+
+[Install]
+WantedBy=sysinit.target

@@ -1,16 +1,20 @@
 [Unit]
-Description=Fan Control for Raspberry Pi
-After=multi-user.target
+Description=Custom PWM Fan Control for Raspberry Pi
+# Avvia subito dopo il kernel e pigpiod
+After=basic.target sysinit.target pigpiod.service
+Before=multi-user.target
 Requires=pigpiod.service
-StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/python3 /opt/fancontrol/fan_control.py
 Restart=always
-RestartSec=1
+RestartSec=2
 User=pi
 Group=pi
 
+# Dare alta priorità, parte in early boot
+DefaultDependencies=no
+
 [Install]
-WantedBy=multi-user.target
+WantedBy=sysinit.target

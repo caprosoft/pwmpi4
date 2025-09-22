@@ -13,8 +13,5 @@ RestartSec=2
 User=pi
 Group=pi
 
-# Dare alta priorità, parte in early boot
-DefaultDependencies=no
-
 [Install]
 WantedBy=sysinit.target

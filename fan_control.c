@@ -4,47 +4,71 @@
 #include <pigpiod_if2.h>
 #include <time.h>
 
-// Parametri configurabili
-#define HYST 2                   // °C di isteresi
-#define MIN_TIME_AT_LEVEL 30     // secondi minimo prima di cambiare livello
-#define RAMP_STEP 8              // incremento % per step della rampa
-#define RAMP_DELAY 400000        // microsecondi tra step (0.4s)
-#define MAX_SAFE_TEMP 70         // oltre questa temp: 100%
-#define EMERGENCY_TEMP 80        // emergenza: forzare 100%
+/*
+ * fan_controller.c
+ * ----------------
+ *
+ * 
+ */
 
-// Pin e frequenza
+// =======================
+// Configurable parameters
+// =======================
+
+#define HYST 3                   // °C hysteresis
+#define MIN_TIME_AT_LEVEL 20     // minimum seconds before changing level
+#define RAMP_STEP 8              // increment % per ramp step
+#define RAMP_DELAY 400000        // microseconds between ramp steps (0.4s)
+#define MAX_SAFE_TEMP 70         // beyond this temp: 100%
+#define EMERGENCY_TEMP 80        // emergency: force 100%
+
+// =================
+// Pin and PWM freq
+// =================
+
 #define FAN_PWM 18   // GPIO18 (PWM)
-#define FAN_TACH 17  // GPIO17 (tachimetro)
+#define FAN_TACH 17  // GPIO17 (tachometer)
 #define FREQ 25000   // 25 kHz
 
-// Mappa temperatura → duty (%)
+/*
+ * Temperature→duty mapping table
+ */
 typedef struct {
     int threshold;
     int percent;
 } fan_entry;
 
 fan_entry FAN_MAP[] = {
-    {0,   0},
+    {0,   0},    // off up to 45°C
     {45,  0},
-    {50,  20},
-    {55,  35},
-    {60,  55},
-    {65,  70},
-    {70,  85},
+    {50,  30},   // at 50°C, start at 30%
+    {55,  45},
+    {60,  60},
+    {65,  75},
+    {70,  90},
     {999, 100}
 };
 int FAN_MAP_LEN = sizeof(FAN_MAP)/sizeof(FAN_MAP[0]);
 
-// Variabili globali
-volatile int tach_counter = 0;
-int pi;
+// ==================
+// Global variables
+// ==================
 
-// Callback tachimetro
+volatile int tach_counter = 0;   // incremented by tachometer callback
+int pi;                          // pigpio handle
+
+// ======================
+// Callback: tachometer
+// ======================
+
 void tach_callback(int pi, unsigned user_gpio, unsigned level, uint32_t tick) {
-    if (level == 0) tach_counter++; // conta fronti di discesa
+    if (level == 0) tach_counter++; // count falling edges only
 }
 
-// Lettura temperatura CPU
+// =====================
+// Read CPU temperature
+// =====================
+
 float get_cpu_temp() {
     FILE *fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
     if (!fp) return -1;
@@ -54,7 +78,10 @@ float get_cpu_temp() {
     return t / 1000.0;
 }
 
-// Imposta duty PWM (%)
+// =================
+// Set PWM duty (%)
+// =================
+
 void set_fan_speed(int percent) {
     if (percent < 0) percent = 0;
     if (percent > 100) percent = 100;
@@ -62,16 +89,22 @@ void set_fan_speed(int percent) {
     set_PWM_dutycycle(pi, FAN_PWM, duty);
 }
 
-// Calcolo RPM (bloccante)
+// =======================
+// Measure RPM (blocking)
+// =======================
+
 int get_rpm(int interval) {
     tach_counter = 0;
     sleep(interval);
     int pulses = tach_counter;
-    int rpm = (pulses / 2) * (60 / interval); // Noctua = 2 impulsi/giro
+    int rpm = (pulses / 2) * (60 / interval); // Noctua = 2 pulses/rev
     return rpm;
 }
 
-// Trova target % dalla mappa
+// ==========================
+// Lookup: temp -> target pct
+// ==========================
+
 int target_speed_from_temp(float temp) {
     for (int i=0; i<FAN_MAP_LEN; i++) {
         if (temp <= FAN_MAP[i].threshold)
@@ -80,7 +113,10 @@ int target_speed_from_temp(float temp) {
     return 100;
 }
 
-// Rampa da current → target
+// =================
+// Soft-ramp routine
+// =================
+
 int ramp_to(int current_pct, int target_pct) {
     if (current_pct == target_pct) return current_pct;
     int step = (target_pct > current_pct) ? RAMP_STEP : -RAMP_STEP;
@@ -98,15 +134,19 @@ int ramp_to(int current_pct, int target_pct) {
     return pct;
 }
 
+// ========
+// main()
+// ========
+
 int main() {
-    // Connessione a pigpiod
+    // Connect to pigpiod
     pi = pigpio_start(NULL, NULL);
     if (pi < 0) {
-        fprintf(stderr, "Errore: pigpiod non connesso\n");
+        fprintf(stderr, "Error: pigpiod not connected\n");
         return 1;
     }
 
-    // Setup pin
+    // Setup pins
     set_mode(pi, FAN_PWM, PI_OUTPUT);
     set_PWM_frequency(pi, FAN_PWM, FREQ);
     set_mode(pi, FAN_TACH, PI_INPUT);
@@ -120,15 +160,13 @@ int main() {
         float temp = get_cpu_temp();
         int target_pct;
 
-        // emergenza
         if (temp >= EMERGENCY_TEMP) {
-            printf("[EMERGENZA] Temp %.1f°C >= %d°C — FORZANDO 100%%\n", temp, EMERGENCY_TEMP);
+            printf("[EMERGENCY] Temp %.1f°C >= %d°C — FORCING 100%%\n", temp, EMERGENCY_TEMP);
             target_pct = 100;
         } else {
             int base_target = target_speed_from_temp(temp);
 
             if (base_target < current_pct) {
-                // per scendere serve temp <= soglia - HYST
                 int base_thresh = 0;
                 for (int i=0; i<FAN_MAP_LEN; i++) {
                     if (FAN_MAP[i].percent == base_target) {
@@ -142,20 +180,17 @@ int main() {
                     target_pct = base_target;
                 }
             } else if (base_target > current_pct) {
-                // salire subito
                 target_pct = base_target;
             } else {
                 target_pct = current_pct;
             }
         }
 
-        // rispetto tempo minimo al livello
         time_t now = time(NULL);
         if (target_pct != current_pct && (now - last_change_time) < MIN_TIME_AT_LEVEL) {
             target_pct = current_pct;
         }
 
-        // rampa
         if (target_pct != current_pct) {
             current_pct = ramp_to(current_pct, target_pct);
             last_change_time = now;

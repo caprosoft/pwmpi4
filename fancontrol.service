@@ -1,34 +1,20 @@
 [Unit]
 Description=Custom PWM Fan Control (C) for Raspberry Pi - Early Boot
-# Assicuriamoci che pigpiod sia richiesto e venga tentato prima
 Requires=pigpiod.service
 After=pigpiod.service
 Before=multi-user.target
-# vogliamo avviare in fase di sysinit (early boot)
 DefaultDependencies=no
-WantedBy=sysinit.target
 
 [Service]
 Type=simple
-# percorso eseguibile: adattalo se lo metti altrove
 ExecStart=/opt/fancontrol/fan_control
-# attesa pulita di pigpiod prima dell'avvio (evita che parta troppo presto)
 ExecStartPre=/bin/sh -c 'for i in 0 1 2 3 4; do systemctl is-active --quiet pigpiod && exit 0 || sleep 1; done; exit 1'
 WorkingDirectory=/opt/fancontrol
 User=pi
 Group=pi
-
 Restart=always
 RestartSec=2
-
-# limita tentativi ripetuti per non floodare il sistema in caso di crash immediato
-StartLimitIntervalSec=60
-StartLimitBurst=5
-
-# journal/syslog identifier utile per debug
 SyslogIdentifier=fancontrol
-
-# Riduci privilegi ambientali (opzionale, ma consigliato)
 ProtectHome=true
 NoNewPrivileges=true
 

@@ -1,6 +1,10 @@
 # Raspberry Pi 4 PWM Fan Controller Service
 
-This project provides a lightweight and efficient solution for controlling 5V PWM fans (such as the Noctua NF-A4x10) on a Raspberry Pi 4. Written in C and leveraging the **pigpio** library, it offers precise speed regulation based on CPU temperature, real-time tachometer feedback (RPM monitoring), and configurable hysteresis for smooth operation. It comes with a systemd service file to ensure the fan controller starts immediately during early boot.
+This project provides a lightweight and efficient solution for controlling 5V PWM fans (such as the Noctua NF-A4x10) on a Raspberry Pi 4.
+
+Written in C and leveraging the **pigpio** library, it offers precise `fan speed regulation based on CPU temperature`, real-time tachometer feedback (RPM monitoring), and configurable hysteresis for smooth operation.
+
+It comes with a systemd service file to ensure the fan controller starts immediately during early boot.
 
 ## Key Features
 *   **Lightweight & Fast**: Written in pure C for minimal resource usage.
@@ -16,7 +20,7 @@ This project provides a lightweight and efficient solution for controlling 5V PW
 
 ### Hardware
 - Raspberry Pi 4
-- 5V PWM Fan (e.g. Noctua NF-A4x10)
+- 5V PWM Fan (e.g. Noctua NF-A4x10 5V PWM)
 - Connections:
   - **GPIO18 (Pin 12) (PWM)** → blue wire
   - **GPIO17 (Pin 11) (Tachometer)** → green wire
@@ -51,14 +55,10 @@ sudo mkdir -p /opt/fancontrol
 sudo chown $(whoami):$(whoami) /opt/fancontrol
 ```
 
-Copy the source/executable files into the folder:
+Copy the source files into the folder:
 
 ```bash
-# if you only have the .c file
 cp fan_control.c /opt/fancontrol/
-
-# if you have locally compiled the executable
-# cp fan_control /opt/fancontrol/
 ```
 
 Enter the folder:

@@ -1,6 +1,14 @@
-# Compilation and Execution Guide - Fan Control in C (Raspberry Pi 4)
+# Raspberry Pi 4 PWM Fan Controller Service
 
-This guide explains how to compile and run the `fan_control.c` program which manages a PWM fan (e.g. Noctua NF-A4x10) on Raspberry Pi 4 using the **pigpio** library. It also includes the systemd unit for early-boot startup.
+This project provides a lightweight and efficient solution for controlling 5V PWM fans (such as the Noctua NF-A4x10) on a Raspberry Pi 4. Written in C and leveraging the **pigpio** library, it offers precise speed regulation based on CPU temperature, real-time tachometer feedback (RPM monitoring), and configurable hysteresis for smooth operation. It comes with a systemd service file to ensure the fan controller starts immediately during early boot.
+
+## Key Features
+*   **Lightweight & Fast**: Written in pure C for minimal resource usage.
+*   **Smart Control**: Adjusts fan speed dynamically based on CPU temperature.
+*   **RPM Monitoring**: Reads fan speed via the tachometer pin (GPIO17).
+*   **Smooth Operation**: Implements hysteresis to prevent rapid speed switching.
+*   **Systemd Integration**: Includes a service unit for automatic startup at boot.
+*   **Hardware Support**: Optimized for Raspberry Pi 4 and 5V PWM fans.
 
 ---
 
@@ -10,9 +18,10 @@ This guide explains how to compile and run the `fan_control.c` program which man
 - Raspberry Pi 4
 - 5V PWM Fan (e.g. Noctua NF-A4x10)
 - Connections:
-  - **GPIO18 (PWM)** → blue wire
-  - **GPIO17 (Tachometer)** → green wire
-  - **5V / GND** → yellow and black wires
+  - **GPIO18 (Pin 12) (PWM)** → blue wire
+  - **GPIO17 (Pin 11) (Tachometer)** → green wire
+  - **5V (Pin 4)** → yellow wire
+  - **GND (Pin 6)** → black wire
 
 ### Software
 - Raspberry Pi OS (Raspbian)

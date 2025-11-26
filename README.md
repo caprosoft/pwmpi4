@@ -22,10 +22,10 @@ It comes with a systemd service file to ensure the fan controller starts immedia
 - Raspberry Pi 4
 - 5V PWM Fan (e.g. Noctua NF-A4x10 5V PWM)
 - Connections:
-  - **GPIO18 (Pin 12) (PWM)** → blue wire
-  - **GPIO17 (Pin 11) (Tachometer)** → green wire
-  - **5V (Pin 4)** → yellow wire
-  - **GND (Pin 6)** → black wire
+  - 🔵 **GPIO18 (Pin 12) (PWM)** → blue wire
+  - 🟢 **GPIO17 (Pin 11) (Tachometer)** → green wire
+  - 🟡 **5V (Pin 4)** → yellow wire
+  - ⚫ **GND (Pin 6)** → black wire
 
 ### Software
 - Raspberry Pi OS (Raspbian)

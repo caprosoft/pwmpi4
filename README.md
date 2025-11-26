@@ -1,58 +1,58 @@
-# Guida compilazione ed esecuzione - Fan Control in C (Raspberry Pi 4)
+# Compilation and Execution Guide - Fan Control in C (Raspberry Pi 4)
 
-Questa guida spiega come compilare ed eseguire il programma `fan_control.c` che gestisce una ventola PWM (es. Noctua NF-A4x10) su Raspberry Pi 4 tramite la libreria **pigpio**. Include anche l'unit systemd per avvio early-boot.
+This guide explains how to compile and run the `fan_control.c` program which manages a PWM fan (e.g. Noctua NF-A4x10) on Raspberry Pi 4 using the **pigpio** library. It also includes the systemd unit for early-boot startup.
 
 ---
 
-## 1. Requisiti
+## 1. Requirements
 
 ### Hardware
-- Raspberry Pi 4  
-- Ventola PWM 5V (es. Noctua NF-A4x10)  
-- Collegamenti:
-  - **GPIO18 (PWM)** → filo blu
-  - **GPIO17 (Tachimetro)** → filo verde
-  - **5V / GND** → fili giallo e nero
+- Raspberry Pi 4
+- 5V PWM Fan (e.g. Noctua NF-A4x10)
+- Connections:
+  - **GPIO18 (PWM)** → blue wire
+  - **GPIO17 (Tachometer)** → green wire
+  - **5V / GND** → yellow and black wires
 
 ### Software
 - Raspberry Pi OS (Raspbian)
-- `pigpiod` attivo al boot (demone pigpio)
+- `pigpiod` active at boot (pigpio daemon)
 
 ---
 
-## 2. Installazione librerie di sviluppo
+## 2. Installing development libraries
 
-Apri un terminale e esegui:
+Open a terminal and run:
 
 ```bash
 sudo apt update
 sudo apt install build-essential libpigpiod-if2-1 libpigpiod-if2-dev pigpio
 ```
 
-- `build-essential` → compilatore C e utilità make
-- `libpigpiod-if2-dev` → header e libreria C per interfacciarsi con `pigpiod`
-- `pigpio` → demone per gestione GPIO/PWM
+- `build-essential` → C compiler and make utilities
+- `libpigpiod-if2-dev` → headers and C library to interface with `pigpiod`
+- `pigpio` → daemon for GPIO/PWM management
 
 ---
 
-## 3. Preparare la cartella progetto
+## 3. Preparing the project directory
 
 ```bash
 sudo mkdir -p /opt/fancontrol
 sudo chown $(whoami):$(whoami) /opt/fancontrol
 ```
 
-Copia i file sorgente/eseguibile nella cartella:
+Copy the source/executable files into the folder:
 
 ```bash
-# se hai solo il .c
+# if you only have the .c file
 cp fan_control.c /opt/fancontrol/
 
-# se hai compilato localmente l'eseguibile
+# if you have locally compiled the executable
 # cp fan_control /opt/fancontrol/
 ```
 
-Entra nella cartella:
+Enter the folder:
 
 ```bash
 cd /opt/fancontrol
@@ -60,15 +60,15 @@ cd /opt/fancontrol
 
 ---
 
-## 4. Compilazione del programma
+## 4. Compiling the program
 
-Compila il C usando la libreria `pigpiod_if2`:
+Compile the C code using the `pigpiod_if2` library:
 
 ```bash
 gcc fan_control.c -lpigpiod_if2 -o fan_control
 ```
 
-Rendi eseguibile:
+Make it executable:
 
 ```bash
 chmod +x fan_control
@@ -76,21 +76,21 @@ chmod +x fan_control
 
 ---
 
-## 5. Avvio manuale
+## 5. Manual start
 
-Avvia il demone `pigpiod` (se non è già in esecuzione):
+Start the `pigpiod` daemon (if it is not already running):
 
 ```bash
 sudo systemctl start pigpiod
 ```
 
-Esegui il programma manualmente per test rapido:
+Run the program manually for a quick test:
 
 ```bash
 ./fan_control
 ```
 
-Dovresti vedere un output simile a:
+You should see output similar to:
 
 ```
 Temp: 51.2°C | Fan: 20% | RPM: 3500
@@ -98,13 +98,13 @@ Temp: 53.0°C | Fan: 35% | RPM: 4200
 ...
 ```
 
-Per fermare manualmente: `Ctrl+C` (il programma farà lo shutdown pulito della ventola prima di uscire).
+To stop manually: `Ctrl+C` (the program will perform a clean shutdown of the fan before exiting).
 
 ---
 
-## 6. Installazione del servizio systemd (early boot)
+## 6. Installing the systemd service (early boot)
 
-Crea il file di unit systemd `/etc/systemd/system/fancontrol.service`. Puoi farlo con `sudo nano` oppure con `tee`:
+Create the systemd unit file `/etc/systemd/system/fancontrol.service`. You can do this with `sudo nano` or with `tee`:
 
 ```bash
 sudo tee /etc/systemd/system/fancontrol.service > /dev/null <<'EOF'
@@ -136,9 +136,9 @@ WantedBy=sysinit.target
 EOF
 ```
 
-**Nota:** se usi un utente diverso da `pi`, modifica `User=` e `Group=` di conseguenza.
+**Note:** if you use a user other than `pi`, modify `User=` and `Group=` accordingly.
 
-Abilita e avvia il servizio:
+Enable and start the service:
 
 ```bash
 sudo systemctl daemon-reload
@@ -146,7 +146,7 @@ sudo systemctl enable fancontrol
 sudo systemctl start fancontrol
 ```
 
-Verifica lo stato:
+Check the status:
 
 ```bash
 systemctl status fancontrol
@@ -155,39 +155,39 @@ journalctl -u fancontrol -f
 
 ---
 
-## 7. Debug e monitoraggio
+## 7. Debug and monitoring
 
-Controlla che `pigpiod` sia attivo:
+Check that `pigpiod` is active:
 
 ```bash
 systemctl status pigpiod
 ```
 
-Log in tempo reale del servizio:
+Real-time service logs:
 
 ```bash
 journalctl -u fancontrol -f
 ```
 
-Se il servizio va in crash ripetuto, guarda `journalctl -xe` per messaggi di errore e i log dell'eseguibile.
+If the service crashes repeatedly, check `journalctl -xe` for error messages and the executable's logs.
 
 ---
 
-## 8. Arresto e rimozione del servizio
+## 8. Stopping and removing the service
 
-Per fermare temporaneamente:
+To stop temporarily:
 
 ```bash
 sudo systemctl stop fancontrol
 ```
 
-Per disabilitare all'avvio:
+To disable at startup:
 
 ```bash
 sudo systemctl disable fancontrol
 ```
 
-Per rimuovere il file unit:
+To remove the unit file:
 
 ```bash
 sudo rm /etc/systemd/system/fancontrol.service
@@ -196,36 +196,36 @@ sudo systemctl daemon-reload
 
 ---
 
-## 9. Personalizzazioni utili
+## 9. Useful customizations
 
-- **Parametri del codice**: isteresi, soglie, ramp step e MIN_TIME_AT_LEVEL sono definiti nel sorgente C come `#define` — modifica `fan_control.c` e ricompila per cambiare comportamento.  
-- **Percorso eseguibile**: cambialo in `/opt/fancontrol` o dove preferisci, ma aggiorna `ExecStart` nel file `.service`.  
-- **Logging su file**: se vuoi log anche in `/var/log/fancontrol.log`, puoi aggiungere al blocco `[Service]`:
+- **Code parameters**: hysteresis, thresholds, ramp step, and MIN_TIME_AT_LEVEL are defined in the C source as `#define` — modify `fan_control.c` and recompile to change behavior.
+- **Executable path**: change it to `/opt/fancontrol` or wherever you prefer, but update `ExecStart` in the `.service` file.
+- **Logging to file**: if you want logs in `/var/log/fancontrol.log` as well, you can add to the `[Service]` block:
   ```ini
   StandardOutput=append:/var/log/fancontrol.log
   StandardError=inherit
   ```
-  e creare il file con i permessi corretti:
+  and create the file with correct permissions:
   ```bash
   sudo touch /var/log/fancontrol.log
   sudo chown pi:pi /var/log/fancontrol.log
   ```
-- **Test di RPM**: se il tachimetro non fornisce impulsi, controlla wiring (pull-up) e che il pin configurato sia corretto.
+- **RPM Test**: if the tachometer does not provide pulses, check wiring (pull-up) and that the configured pin is correct.
 
 ---
 
-## 10. Esempio di procedure rapide (one-liners)
+## 10. Example of quick procedures (one-liners)
 
-Compilare, copiare e installare servizio (esempio rapido):
+Compile, copy, and install service (quick example):
 
 ```bash
-# dalla cartella contenente fan_control.c
+# from the folder containing fan_control.c
 gcc fan_control.c -lpigpiod_if2 -o fan_control
 sudo mkdir -p /opt/fancontrol
 sudo cp fan_control /opt/fancontrol/
 sudo chown -R pi:pi /opt/fancontrol
 sudo chmod +x /opt/fancontrol/fan_control
-# copia del service (assumendo fancontrol.service già creato nella cwd)
+# copy the service (assuming fancontrol.service already created in cwd)
 sudo cp fancontrol.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now fancontrol

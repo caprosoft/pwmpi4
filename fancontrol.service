@@ -1,5 +1,5 @@
 [Unit]
-Description=Custom PWM Fan Control (C) for Raspberry Pi - Early Boot
+Description=Custom PWM Fan Controller Service for Raspberry Pi
 Requires=pigpiod.service
 After=pigpiod.service
 Before=multi-user.target

@@ -113,17 +113,21 @@ To stop manually: `Ctrl+C` (the program will perform a clean shutdown of the fan
 
 ## 6. Installing the systemd service (early boot)
 
-Create the systemd unit file `/etc/systemd/system/fancontrol.service`. You can do this with `sudo nano` or with `tee`:
+Create the systemd unit file `/etc/systemd/system/fancontrol.service` using `nano`:
 
 ```bash
-sudo tee /etc/systemd/system/fancontrol.service > /dev/null <<'EOF'
+sudo nano /etc/systemd/system/fancontrol.service
+```
+
+Paste the following content into the file:
+
+```ini
 [Unit]
-Description=Custom PWM Fan Control (C) for Raspberry Pi - Early Boot
+Description=Custom PWM Fan Controller Service for Raspberry Pi
 Requires=pigpiod.service
 After=pigpiod.service
 Before=multi-user.target
 DefaultDependencies=no
-WantedBy=sysinit.target
 
 [Service]
 Type=simple
@@ -134,16 +138,15 @@ User=pi
 Group=pi
 Restart=always
 RestartSec=2
-StartLimitIntervalSec=60
-StartLimitBurst=5
 SyslogIdentifier=fancontrol
 ProtectHome=true
 NoNewPrivileges=true
 
 [Install]
 WantedBy=sysinit.target
-EOF
 ```
+
+Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
 **Note:** if you use a user other than `pi`, modify `User=` and `Group=` accordingly.
 

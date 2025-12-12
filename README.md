@@ -30,6 +30,7 @@ It comes with a systemd service file to ensure the fan controller starts immedia
 ### Software
 - Raspberry Pi OS (Raspbian)
 - `pigpiod` active at boot (pigpio daemon)
+- Disable the 'fan' option in the Performance settings of the Raspberry Pi configuration (`raspi-config`)
 
 ---
 

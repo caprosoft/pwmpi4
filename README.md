@@ -40,11 +40,10 @@ Open a terminal and run:
 
 ```bash
 sudo apt update
-sudo apt install build-essential libpigpiod-if2-1 libpigpiod-if2-dev pigpio
+sudo apt install build-essential libpigpiod-if2-1 pigpio
 ```
 
 - `build-essential` → C compiler and make utilities
-- `libpigpiod-if2-dev` → headers and C library to interface with `pigpiod`
 - `pigpio` → daemon for GPIO/PWM management
 
 ---

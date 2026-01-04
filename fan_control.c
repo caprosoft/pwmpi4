@@ -37,9 +37,9 @@ typedef struct {
 } fan_entry;
 
 fan_entry FAN_MAP[] = {
-    {0,   0},    // off up to 45°C
+    {0,   0},    // 0% (off) up to 45°C
     {45,  0},
-    {50,  30},   // at 50°C, start at 30%
+    {50,  30},   // 30% speed above 45°C
     {55,  45},
     {60,  60},
     {65,  75},

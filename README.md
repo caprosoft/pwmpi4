@@ -51,6 +51,15 @@ sudo apt install build-essential libpigpiod-if2-1 libpigpiod-if2-dev pigpio
 
 ## 3. Preparing the project directory
 
+Clone the repository:
+
+```bash
+git clone https://github.com/caprosoft/pwmpi4.git
+cd pwmpi4
+```
+
+Create the installation directory:
+
 ```bash
 sudo mkdir -p /opt/fancontrol
 sudo chown $(whoami):$(whoami) /opt/fancontrol

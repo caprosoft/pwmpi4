@@ -162,16 +162,19 @@ int main() {
             printf("[EMERGENCY] Temp %.1f°C >= %d°C — FORCING 100%%\n", temp, EMERGENCY_TEMP);
             target_pct = 100;
         } else {
-            int base_target = target_speed_from_temp(temp);
+            int base_target = 100;
+            int base_thresh = 999;
+
+            for (int i=0; i<FAN_MAP_LEN; i++) {
+                if (temp <= FAN_MAP[i].threshold) {
+                    base_target = FAN_MAP[i].percent;
+                    base_thresh = FAN_MAP[i].threshold;
+                    break;
+                }
+            }
 
             if (base_target < current_pct) {
-                int base_thresh = 0;
-                for (int i=0; i<FAN_MAP_LEN; i++) {
-                    if (FAN_MAP[i].percent == base_target) {
-                        base_thresh = FAN_MAP[i].threshold;
-                        break;
-                    }
-                }
+                // Hysteresis check using the correct threshold
                 if (temp > (base_thresh - HYST)) {
                     target_pct = current_pct;
                 } else {

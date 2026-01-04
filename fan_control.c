@@ -13,7 +13,7 @@
 // Configurable parameters
 // =======================
 
-#define HYST 3                   // °C hysteresis
+#define HYST 5                   // °C hysteresis
 #define MIN_TIME_AT_LEVEL 20     // minimum seconds before changing level
 #define RAMP_STEP 8              // increment % per ramp step
 #define RAMP_DELAY 400000        // microseconds between ramp steps (0.4s)
@@ -36,14 +36,13 @@ typedef struct {
     int percent;
 } fan_entry;
 
-fan_entry FAN_MAP[] = {
-    {0,   0},    // 0% (off) up to 45°C
-    {45,  0},
-    {50,  30},   // 30% speed above 45°C
-    {55,  45},
-    {60,  60},
-    {65,  75},
-    {70,  90},
+    {0,   0},    // 0% (off) up to 50°C
+    {50,  0},
+    {55,  30},   // 30% speed above 50°C
+    {60,  45},
+    {65,  60},
+    {70,  75},
+    {75,  90},
     {999, 100}
 };
 int FAN_MAP_LEN = sizeof(FAN_MAP)/sizeof(FAN_MAP[0]);

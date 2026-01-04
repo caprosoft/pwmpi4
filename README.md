@@ -111,8 +111,8 @@ Run the program manually for a quick test:
 You should see output similar to:
 
 ```
-Temp: 51.2°C | Fan: 20% | RPM: 3500
-Temp: 53.0°C | Fan: 35% | RPM: 4200
+Temp: 51.2°C | Fan: 30% | RPM: 3500
+Temp: 56.0°C | Fan: 45% | RPM: 4800
 ...
 ```
 

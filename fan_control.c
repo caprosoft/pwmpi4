@@ -36,6 +36,7 @@ typedef struct {
     int percent;
 } fan_entry;
 
+fan_entry FAN_MAP[] = {
     {0,   0},    // 0% (off) up to 50°C
     {50,  0},
     {55,  30},   // 30% speed above 50°C
